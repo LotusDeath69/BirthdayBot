@@ -84,7 +84,9 @@ async def file(ctx):
 
 @client.event 
 async def on_ready():
-    print("logged in")
+    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="people's birthday"))
+    print("DISCORD commands:\n!add <name> <date> (yyyy/mm/dd) format - example: !add Test 2006/1/1\n!delete <name> - example: !delete Test\n!file")
+    print("bot logged in")
 
 
 
