@@ -15,8 +15,8 @@ client = commands.Bot(command_prefix="!", help_command=None)
 @tasks.loop(hours=24)
 async def checkBirthday(dates):
     current_month, currently_day = datetime.now().month, datetime.now().day
-    channel = await client.fetch_channel(905623171716243457)
-    user = await client.fetch_user(466042357553430539)
+    channel = await client.fetch_channel(905623171716243457) # Edit channel
+    user = await client.fetch_user(466042357553430539) # Edit user id       
     for i in dates:
         m, d = dates[i].split("/")[1], dates[i].split("/")[2]
         d1, d2 = datetime(1, current_month, currently_day), datetime(1, int(m), int(d))
