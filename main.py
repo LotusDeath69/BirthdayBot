@@ -9,7 +9,7 @@ load_dotenv()
 """
 Requires discord token
 """
-client = commands.Bot(command_prefix="!", help_command=None)
+client = commands.Bot(command_prefix="!")
 
 # Loop N check 
 @tasks.loop(hours=24)
@@ -29,9 +29,6 @@ async def checkBirthday(dates):
 
 # Calendar 
 class Calendar:
-    def __init__(self) -> None:
-        pass 
-
     def add_date(self, name, date):
         try:
             with open("dates.json", "r+") as f:
@@ -44,7 +41,7 @@ class Calendar:
         except Exception as e:
             return e
 
-    
+
     def delete_date(self, name):
         try:
             with open("dates.json", "r+") as f:
@@ -65,6 +62,14 @@ class Calendar:
         with open("dates.json", "r+") as f:
             return json.load(f)
 
+    
+    def format_dates(self, dates): 
+        text = "```\nBirthdays:\n"
+        for i in dates.keys():
+            text += f"{i}: {dates[i]}\n"
+        text += "```"
+        return text
+
 
 # Discord Command 
 @client.command()
@@ -82,12 +87,16 @@ async def file(ctx):
     await ctx.reply(content="JSON file", file=discord.File("dates.json"))
 
 
+@client.command()
+async def dates(ctx):
+    await ctx.reply(C.format_dates(C.get_dates()))
+
+
 @client.event 
 async def on_ready():
     await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="people's birthday"))
     print("DISCORD commands:\n!add <name> <date> (yyyy/mm/dd) format - example: !add Test 2006/1/1\n!delete <name> - example: !delete Test\n!file")
     print("bot logged in")
-
 
 
 # Initiate 
