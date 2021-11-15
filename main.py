@@ -92,7 +92,7 @@ async def dates(ctx):
     await ctx.reply(C.format_dates(C.get_dates()))
 
 
-@client.comman()
+@client.command()
 async def src(ctx):
     await ctx.reply("https://github.com/LotusDeath69/BirthdayBot")
 

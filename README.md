@@ -9,3 +9,5 @@
 - !add `name` `date` - date must be in yyyy/mm/dd format 
 - !delete `name`
 - !file 
+- !dates - return the birthdays formatted for discord message 
+- !src - return the link to this repo 
