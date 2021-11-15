@@ -92,6 +92,11 @@ async def dates(ctx):
     await ctx.reply(C.format_dates(C.get_dates()))
 
 
+@client.comman()
+async def src(ctx):
+    await ctx.reply("https://github.com/LotusDeath69/BirthdayBot")
+
+
 @client.event 
 async def on_ready():
     await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="people's birthday"))
