@@ -14,9 +14,19 @@ client = commands.Bot(command_prefix="!")
 # Loop N check 
 @tasks.loop(hours=24)
 async def checkBirthday(dates):
-    current_month, currently_day = datetime.now(timezone(timedelta(hours=-5))).month, datetime.now(timezone(timedelta(hours=-5))).day
+    # Get current year, month, date
+    current_date = datetime.now(timezone(timedelta(hours=-5)))
+    current_month, currently_day, current_year = current_date.month, current_date.day, current_date.year
+
+    # Add check birthday action to log 
+    print("a")
+    L.add_log(f"{current_year}/{current_month}/{currently_day}", "Check birthday")
+
+    # Get channel and user 
     channel = await client.fetch_channel(905623171716243457) # Edit channel
     user = await client.fetch_user(466042357553430539) # Edit user id       
+
+    # Check if any birthdays is within 10 days of the current date; notify user in the channel if so 
     for i in dates:
         m, d = dates[i].split("/")[1], dates[i].split("/")[2]
         d1, d2 = datetime(1, current_month, currently_day), datetime(1, int(m), int(d))
@@ -29,9 +39,13 @@ async def checkBirthday(dates):
 
 # Calendar 
 class Calendar:
+    def __init__(self, file_location):
+        self.file = file_location
+
+
     def add_date(self, name, date):
         try:
-            with open("dates.json", "r+") as f:
+            with open(self.file, "r+") as f:
                 data = json.load(f)
                 data[name] = date
                 f.seek(0)
@@ -44,7 +58,7 @@ class Calendar:
 
     def delete_date(self, name):
         try:
-            with open("dates.json", "r+") as f:
+            with open(self.file, "r+") as f:
                 data = json.load(f)
                 for i in data:
                     if i.lower() == name.lower():
@@ -59,7 +73,7 @@ class Calendar:
         
     
     def get_dates(self):
-        with open("dates.json", "r+") as f:
+        with open(self.file, "r+") as f:
             return json.load(f)
 
     
@@ -71,14 +85,72 @@ class Calendar:
         return text
 
 
+class Log:
+    def __init__(self, file_location):
+        self.file = file_location
+
+
+    def add_log(self, date, action):
+        try:
+            with open(self.file, "r+") as f:
+                data = json.load(f)
+                data[date] = action
+                f.seek(0)
+                json.dump(data, f, indent=4)
+                f.truncate()
+                return "Sucess"
+        except Exception as e:
+            return e
+
+
+    def delete_log(self, date):
+        try:
+            with open(self.file, "r+") as f:
+                data = json.load(f)
+                for i in data:
+                    if i == date:
+                        del data[i]
+                        f.seek(0)
+                        json.dump(data, f, indent=4)
+                        f.truncate()
+                        return "Sucess"
+                return f"Error: Cannot find {date}"
+        except Exception as e:
+            return e
+
+
+    def get_logs(self):
+        with open(self.file, "r+") as f:
+            return json.load(f)
+
+
+    def format_logs(self, logs):
+        text = "```\nDate: Action\n"
+        n = len(list(logs))
+        if n > 20:
+            n = 20
+        for i in list(logs)[::-1][:n]:
+            print(i)
+            text += f"{i}: {logs[i]}\n"
+        text += "```"
+        return text
+
+    
+    def current_date(self):
+        date = datetime.now(timezone(timedelta(hours=-5)))
+        return f"{date.year}/{date.month}/{date.day}"
+
+
 # Discord Command 
 @client.command()
 async def add(ctx, date, name):
+    L.add_log(L.current_date(), f"Add {name}")
     await ctx.reply(C.add_date(date, name))
 
 
 @client.command()
 async def delete(ctx, name): 
+    L.add_log(L.current_date(), f"Delete {name}")
     await ctx.reply(C.delete_date(name))
 
 
@@ -91,6 +163,11 @@ async def file(ctx):
 async def dates(ctx):
     await ctx.reply(C.format_dates(C.get_dates()))
 
+
+@client.command()
+async def logs(ctx):
+    await ctx.reply(L.format_logs(L.get_logs()))
+    
 
 @client.command()
 async def src(ctx):
@@ -106,6 +183,7 @@ async def on_ready():
 
 # Initiate 
 token = os.environ["TOKEN"]
-C = Calendar()
+C = Calendar("dates.json")
+L = Log("logs.json")
 checkBirthday.start(C.get_dates())
 client.run(token)
