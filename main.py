@@ -1,6 +1,6 @@
 import discord
 from discord.ext import tasks, commands
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from dateutil import relativedelta
 import json 
 from dotenv import load_dotenv
@@ -14,7 +14,7 @@ client = commands.Bot(command_prefix="!")
 # Loop N check 
 @tasks.loop(hours=24)
 async def checkBirthday(dates):
-    current_month, currently_day = datetime.now().month, datetime.now().day
+    current_month, currently_day = datetime.now(timezone(timedelta(hours=-5))).month, datetime.now(timezone(timedelta(hours=-5))).day
     channel = await client.fetch_channel(905623171716243457) # Edit channel
     user = await client.fetch_user(466042357553430539) # Edit user id       
     for i in dates:
@@ -23,7 +23,7 @@ async def checkBirthday(dates):
         time_difference = relativedelta.relativedelta(d1, d2)
         if int(m) == current_month and int(d) == currently_day: 
             await channel.send(f"{user.mention} Today is {i}'s birthday.")
-        elif time_difference.months < 1 and time_difference.days > -11 and time_difference.days < 0: 
+        elif time_difference.months == 0 and time_difference.days > -11 and time_difference.days < 0: 
             await channel.send(f"{user.mention} {i}'s birthday is in {time_difference.days *-1} days.")
 
 
