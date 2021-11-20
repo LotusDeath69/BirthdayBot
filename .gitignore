@@ -1,6 +1,6 @@
 .env 
 /venv 
 test.py 
-logs.json
 database.db 
+dates.json
 /__pycache__ 
