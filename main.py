@@ -70,7 +70,7 @@ class Calendar:
                 return f"Error: Cannot find {name}"
         except Exception as e:
             return e
-        
+    
     
     def get_dates(self):
         with open(self.file, "r+") as f:
