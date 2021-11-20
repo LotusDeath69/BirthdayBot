@@ -5,6 +5,7 @@ from dateutil import relativedelta
 import json 
 from dotenv import load_dotenv
 import os 
+from datebase import * 
 load_dotenv()
 """
 Requires discord token
@@ -19,7 +20,6 @@ async def checkBirthday(dates):
     current_month, currently_day, current_year = current_date.month, current_date.day, current_date.year
 
     # Add check birthday action to log 
-    print("a")
     L.add_log(f"{current_year}/{current_month}/{currently_day}", "Check birthday")
 
     # Get channel and user 
@@ -86,42 +86,16 @@ class Calendar:
 
 
 class Log:
-    def __init__(self, file_location):
-        self.file = file_location
-
-
     def add_log(self, date, action):
         try:
-            with open(self.file, "r+") as f:
-                data = json.load(f)
-                data[date] = action
-                f.seek(0)
-                json.dump(data, f, indent=4)
-                f.truncate()
-                return "Sucess"
+            logAdd(date, action, "logs")
+            closeConnection()
         except Exception as e:
-            return e
-
-
-    def delete_log(self, date):
-        try:
-            with open(self.file, "r+") as f:
-                data = json.load(f)
-                for i in data:
-                    if i == date:
-                        del data[i]
-                        f.seek(0)
-                        json.dump(data, f, indent=4)
-                        f.truncate()
-                        return "Sucess"
-                return f"Error: Cannot find {date}"
-        except Exception as e:
-            return e
+            return e 
 
 
     def get_logs(self):
-        with open(self.file, "r+") as f:
-            return json.load(f)
+        return logRetrive()
 
 
     def format_logs(self, logs):
@@ -130,12 +104,11 @@ class Log:
         if n > 20:
             n = 20
         for i in list(logs)[::-1][:n]:
-            print(i)
-            text += f"{i}: {logs[i]}\n"
+            text += f"{i[0]}: {i[1]}\n"
         text += "```"
         return text
 
-    
+
     def current_date(self):
         date = datetime.now(timezone(timedelta(hours=-5)))
         return f"{date.year}/{date.month}/{date.day}"
@@ -167,7 +140,7 @@ async def dates(ctx):
 @client.command()
 async def logs(ctx):
     await ctx.reply(L.format_logs(L.get_logs()))
-    
+
 
 @client.command()
 async def src(ctx):
@@ -181,9 +154,14 @@ async def on_ready():
     print("bot logged in")
 
 
+# @client.command()
+# async def test(ctx, *args):
+#     L.add_log("test", "test")
+
+
 # Initiate 
 token = os.environ["TOKEN"]
 C = Calendar("dates.json")
-L = Log("logs.json")
+L = Log()
 checkBirthday.start(C.get_dates())
 client.run(token)

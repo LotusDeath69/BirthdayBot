@@ -2,3 +2,5 @@
 /venv 
 test.py 
 logs.json
+database.db 
+/__pycache__ 
