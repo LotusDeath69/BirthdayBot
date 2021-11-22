@@ -9,8 +9,10 @@ from datebase import *
 load_dotenv()
 """
 Requires discord token
+token = ""
 """
 client = commands.Bot(command_prefix="!")
+
 
 # Loop N check 
 @tasks.loop(hours=24)
@@ -19,12 +21,15 @@ async def checkBirthday(dates):
     current_date = datetime.now(timezone(timedelta(hours=-5)))
     current_month, currently_day, current_year = current_date.month, current_date.day, current_date.year
 
+
     # Add check birthday action to log 
     L.add_log(f"{current_year}/{current_month}/{currently_day}", "Check birthday")
+
 
     # Get channel and user 
     channel = await client.fetch_channel(905623171716243457) # Edit channel
     user = await client.fetch_user(466042357553430539) # Edit user id       
+
 
     # Check if any birthdays is within 10 days of the current date; notify user in the channel if so 
     for i in dates:
@@ -39,10 +44,12 @@ async def checkBirthday(dates):
 
 # Calendar 
 class Calendar:
+    # Set json file location 
     def __init__(self, file_location):
         self.file = file_location
 
 
+    # Add birthday to json file; require `name` and `date` variable 
     def add_date(self, name, date):
         try:
             with open(self.file, "r+") as f:
@@ -56,6 +63,7 @@ class Calendar:
             return e
 
 
+    # Delete birthday from json file; require `name` variable 
     def delete_date(self, name):
         try:
             with open(self.file, "r+") as f:
@@ -72,11 +80,13 @@ class Calendar:
             return e
     
     
+    # Return dict of json file 
     def get_dates(self):
         with open(self.file, "r+") as f:
             return json.load(f)
 
     
+    # Format dict for discord message 
     def format_dates(self, dates): 
         text = "```\nBirthdays:\n"
         for i in dates.keys():
@@ -86,6 +96,7 @@ class Calendar:
 
 
 class Log:
+    # Add log into db 
     def add_log(self, date, action):
         try:
             logAdd(date, action, "logs")
@@ -94,10 +105,12 @@ class Log:
             return e 
 
 
+    # Return a list of logs from db 
     def get_logs(self):
         return logRetrive()
 
 
+    # Format logs for discord message 
     def format_logs(self, logs):
         text = "```\nDate: Action\n"
         n = len(list(logs))
@@ -109,6 +122,7 @@ class Log:
         return text
 
 
+    # Return current date 
     def current_date(self):
         date = datetime.now(timezone(timedelta(hours=-5)))
         return f"{date.year}/{date.month}/{date.day}"
@@ -157,6 +171,7 @@ async def on_ready():
 # @client.command()
 # async def test(ctx, *args):
 #     L.add_log("test", "test")
+
 
 
 # Initiate 
