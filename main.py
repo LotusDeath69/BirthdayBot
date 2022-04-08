@@ -1,4 +1,5 @@
 import discord
+from discord.channel import VoiceChannel
 from discord.ext import tasks, commands
 from datetime import datetime, timezone, timedelta
 from dateutil import relativedelta
@@ -22,24 +23,27 @@ async def checkBirthday(dates):
     current_month, currently_day, current_year = current_date.month, current_date.day, current_date.year
 
 
-    # Add check birthday action to log 
-    L.add_log(f"{current_year}/{current_month}/{currently_day}", "Check birthday")
-
-
     # Get channel and user 
     channel = await client.fetch_channel(905623171716243457) # Edit channel
     user = await client.fetch_user(466042357553430539) # Edit user id       
 
 
-    # Check if any birthdays is within 10 days of the current date; notify user in the channel if so 
+    # Check if any birthdays is within 5 days of the current date; notify user in the channel if so 
     for i in dates:
         m, d = dates[i].split("/")[1], dates[i].split("/")[2]
         d1, d2 = datetime(1, current_month, currently_day), datetime(1, int(m), int(d))
         time_difference = relativedelta.relativedelta(d1, d2)
-        if int(m) == current_month and int(d) == currently_day: 
+        
+        logs = L.get_logs()
+        for e in logs:
+            if e[2] == i and e[1] == "birthdayPing" and e[0] == f"{current_year}/{current_month}/{currently_day}":
+                return 
+        if int(m) == current_month and int(d) == currently_day:
             await channel.send(f"{user.mention} Today is {i}'s birthday.")
+            L.add_log(f"{current_year}/{current_month}/{currently_day}", "birthdayPing", i)
         elif time_difference.months == 0 and time_difference.days > -11 and time_difference.days < 0: 
             await channel.send(f"{user.mention} {i}'s birthday is in {time_difference.days *-1} days.")
+            L.add_log(f"{current_year}/{current_month}/{currently_day}", "birthdayPing", i)
 
 
 # Calendar 
@@ -97,9 +101,9 @@ class Calendar:
 
 class Log:
     # Add log into db 
-    def add_log(self, date, action):
+    def add_log(self, date, action, name):
         try:
-            logAdd(date, action, "logs")
+            logAdd(date, action, name)
             closeConnection()
         except Exception as e:
             return e 
@@ -168,10 +172,10 @@ async def on_ready():
     print("bot logged in")
 
 
-# @client.command()
-# async def test(ctx, *args):
-#     L.add_log("test", "test")
 
+@client.command()
+async def test(ctx, *args):
+    await ctx.reply(L.get_logs())
 
 
 # Initiate 
@@ -180,3 +184,4 @@ C = Calendar("dates.json")
 L = Log()
 checkBirthday.start(C.get_dates())
 client.run(token)
+
